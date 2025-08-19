@@ -2,10 +2,7 @@
 # Invert source-rock kinetics from routine RockEval (HI, Tmax) only.
 # Accepts either headers: hi,tmax,s1,s2  OR  TOC,S1,S2,S3,Tmax,OI,HI
 # Outputs: fE_distribution.csv  and  hi_tmax_fit_by_sample.csv
-try:
-    trapz = np.trapezoid  # new name
-except AttributeError:
-    trapz = np.trapz      # fallback for older numpy
+
 
 import argparse
 import numpy as np
@@ -13,7 +10,10 @@ import pandas as pd
 from dataclasses import dataclass
 from typing import Tuple
 from scipy.optimize import minimize
-
+try:
+    trapz = np.trapezoid  # new name
+except AttributeError:
+    trapz = np.trapz      # fallback for older numpy
 R = 8.3145  # J/mol-K
 
 @dataclass
@@ -333,4 +333,5 @@ if __name__ == "__main__":
             print("\n[ERROR] Exception while running:")
             traceback.print_exc()
             raise
+
 
