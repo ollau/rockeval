@@ -10,10 +10,13 @@ import pandas as pd
 from dataclasses import dataclass
 from typing import Tuple
 from scipy.optimize import minimize
+
 try:
     trapz = np.trapezoid  # new name
 except AttributeError:
     trapz = np.trapz      # fallback for older numpy
+
+
 R = 8.3145  # J/mol-K
 
 @dataclass
@@ -333,5 +336,3 @@ if __name__ == "__main__":
             print("\n[ERROR] Exception while running:")
             traceback.print_exc()
             raise
-
-
