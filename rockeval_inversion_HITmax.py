@@ -277,4 +277,55 @@ def main():
         print("Wrote plot: HI_fraction_vs_Tmax.png")
         # plt.show()  # uncomment for interactive sessions
     except Exception as e:
+
         print(f"(Plot skipped: {e})")
+
+def selftest():
+    """Run a tiny test inversion with synthetic RockEval-like data."""
+    import numpy as np
+    import pandas as pd
+
+    # Fake data: HI decreases with maturity, Tmax increases
+    HI = np.array([550, 400, 250, 100], dtype=float)
+    Tmax = np.array([430, 445, 460, 480], dtype=float)
+    S1 = np.zeros_like(HI)
+    S2 = np.zeros_like(HI)
+
+    df = pd.DataFrame({"hi": HI, "tmax": Tmax, "s1": S1, "s2": S2})
+    df.to_csv("synthetic_test.csv", index=False)
+
+    fit = invert_hi_tmax(
+        HI_obs=HI,
+        Tmax_obs_C=Tmax,
+        beta_C_per_min=25.0,
+        A_s=1e14,
+        HI0_fixed=600.0,
+        fit_HI0=False,
+    )
+
+    print("\n=== Selftest summary ===")
+    print(f"RMSE Tmax = {fit.rmse_Tmax:.2f} °C")
+    print(f"RMSE HI/HI0 = {fit.rmse_R:.4f}")
+    print("Mode of f(E) = %.1f kJ/mol" % fit.E_kJmol[np.argmax(fit.f)])
+
+    # Write outputs like normal run
+    out = df.copy()
+    out["HI_pred"] = fit.R_pred * fit.HI0
+    out["Tmax_pred_C"] = fit.T_pred_C
+    out["maturity_scalar_m"] = fit.m
+    out.to_csv("hi_tmax_fit_by_sample.csv", index=False)
+    pd.DataFrame({"E_kJmol": fit.E_kJmol, "f_E_density": fit.f}).to_csv("fE_distribution.csv", index=False)
+    print("Wrote synthetic outputs: hi_tmax_fit_by_sample.csv, fE_distribution.csv")
+
+if __name__ == "__main__":
+    import sys
+    if "--selftest" in sys.argv:
+        selftest()
+    else:
+        try:
+            main()
+        except Exception as e:
+            import traceback
+            print("\n[ERROR] Exception while running:")
+            traceback.print_exc()
+            raise
